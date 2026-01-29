@@ -1,0 +1,17 @@
+# Gradle
+.gradle/
+build/
+gradle-app.setting
+!gradle-wrapper.jar
+
+
+# VSCode
+.vscode/
+*.code-workspace
+
+
+# OS Files
+.DS_Store
+.DS_Store?
+
+
