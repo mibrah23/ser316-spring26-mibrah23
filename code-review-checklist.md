@@ -1,7 +1,7 @@
 # Code Review Checklist
 
-**Reviewer Name:** [Your Name]
-**Date:** [Date]
+**Reviewer Name:** [Malek Ibrahim]
+**Date:** [1/28]
 **Branch:** Review
 
 ## Instructions
@@ -22,11 +22,11 @@ Review ALL source files (in main not test) in the project and identify defects u
 
 | Defect ID | File | Line(s) | Category | Description | Severity |
 |-----------|------|---------|----------|-------------|----------|
-| 1 | | | | | |
-| 2 | | | | | |
-| 3 | | | | | |
-| 4 | | | | | |
-| 5 | | | | | |
+| 1 | Book.java| 1-2 | CS | Arraylist and List aren't used | Low |
+| 2 | Book.java | 106 | FD | returnBook() uses a value of 100 instead of availableCopies  | High |
+| 3 | Patron.java | 118-123 | CS | if-else chain on the same line and no spacing | Medium |
+| 4 | Patron.java | 151-152 | CG | empty else | Low |
+| 5 | Checkout.java | 17 | CS | empty comment | Low |
 | 6 | | | | | |
 | 7 | | | | | |
 | 8 | | | | | |
