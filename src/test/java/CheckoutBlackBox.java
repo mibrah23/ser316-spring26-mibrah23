@@ -827,4 +827,76 @@ public class CheckoutBlackBox {
             "Expected 1.0 (overdue warning) to take priority over 1.1 (limit warning) in " + 
             checkoutClass.getSimpleName());
     }
+    //EDGE CASE TESTS 
+
+    /**
+     * T26: Tests renewal when book has 0 available copies
+     * EP 8.1, EP 7.1 - Renewal Edge Case
+     */
+    @ParameterizedTest
+    @MethodSource("checkoutClassProvider")
+    @DisplayName("T26: Renewal succeeds even when book has 0 available copies")
+    public void testRenewalSkipsAvailabilityCheck(Class<? extends Checkout> checkoutClass) throws Exception {
+        checkout = createCheckout(checkoutClass);
+        
+        // Setup: Book with 0 copies, but patron already has it
+        Book book = new Book("978-0-123-45678-9", "Test Book", 
+                             "Author", Book.BookType.FICTION, 5);
+        book.setAvailableCopies(0); // No copies available
+        
+        Patron patron = new Patron("P001", "Test Patron", 
+                                   "test@test.com", Patron.PatronType.STUDENT);
+        patron.addCheckedOutBook(book.getIsbn(), LocalDate.now().minusDays(10));
+        
+        checkout.addBook(book);
+        checkout.registerPatron(patron);
+        
+        // Execute renewal
+        double result = checkout.checkoutBook(book, patron);
+        
+        // Verify - should succeed with renewal code, not fail with 2.0
+        assertEquals(0.1, result, 0.01, 
+            "Expected renewal code 0.1 even with 0 copies in " + checkoutClass.getSimpleName());
+        assertEquals(0, book.getAvailableCopies(),
+            "Copies should stay 0 for renewal in " + checkoutClass.getSimpleName());
+    }
+
+    /**
+     * T27: Tests renewal when patron is at max limit
+     * EP 8.1, EP 9.3 - Renewal Edge Case
+     */
+    @ParameterizedTest
+    @MethodSource("checkoutClassProvider")
+    @DisplayName("T27: Renewal succeeds even when patron is at max limit")
+    public void testRenewalAtMaxLimit(Class<? extends Checkout> checkoutClass) throws Exception {
+        checkout = createCheckout(checkoutClass);
+        
+        // Setup: STUDENT with 10 books (at max)
+        Book book = new Book("978-0-123-45678-9", "Test Book", 
+                             "Author", Book.BookType.FICTION, 5);
+        Patron patron = new Patron("P001", "Test Patron", 
+                                   "test@test.com", Patron.PatronType.STUDENT);
+        
+        // Give patron 10 books including this one
+        patron.addCheckedOutBook(book.getIsbn(), LocalDate.now().minusDays(5));
+        for (int i = 1; i <= 9; i++) {
+            patron.addCheckedOutBook("ISBN-" + i, LocalDate.now().plusDays(30));
+        }
+        
+        checkout.addBook(book);
+        checkout.registerPatron(patron);
+        
+        int copiesBefore = book.getAvailableCopies();
+        
+        // Execute renewal
+        double result = checkout.checkoutBook(book, patron);
+        
+        // Verify - should succeed with renewal, not fail with 3.2
+        assertEquals(0.1, result, 0.01, 
+            "Expected renewal code 0.1 even at max limit in " + checkoutClass.getSimpleName());
+        assertEquals(10, patron.getCheckoutCount(),
+            "Checkout count should stay 10 for renewal in " + checkoutClass.getSimpleName());
+        assertEquals(copiesBefore, book.getAvailableCopies(),
+            "Copies should not change for renewal in " + checkoutClass.getSimpleName());
+    }
 }
