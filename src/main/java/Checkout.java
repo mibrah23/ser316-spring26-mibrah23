@@ -140,10 +140,72 @@ public class Checkout {
      * @return Status code indicating result (see above)
      */
     public double checkoutBook(Book book, Patron patron) {
-//        Implement me in Assignment 3
-        // Normal success
-        return 0.0;
+    // Step 1: Validate patron eligibility 
+    double eligibility = validatePatronEligibility(patron);
+    if (eligibility != 0.0) {
+        return eligibility; // Returns 3.1, 3.0, 4.0, or 4.1
     }
+    
+    // Step 2: Check if book is null
+    if (book == null) {
+        return 2.1;
+    }
+    
+    // Step 3: Check if book is reference-only
+    if (book.isReferenceOnly()) {
+        return 5.0;
+    }
+    
+    // Step 4: Check if this is a renewal 
+    boolean isRenewal = patron.hasBookCheckedOut(book.getIsbn());
+    if (isRenewal) {
+        // Renewal: update due date, don't change availability
+        LocalDate newDueDate = LocalDate.now().plusDays(patron.getLoanPeriodDays());
+        patron.getCheckedOutBooks().put(book.getIsbn(), newDueDate);
+        return 0.1; // Renewal success code
+    }
+    
+    // Step 5: Not a renewal - check availability and limits
+    
+    // 5.1: Check if book is available
+    if (!book.isAvailable()) {
+        return 2.0;
+    }
+    
+    // 5.2: Check if patron is at max checkout limit
+    if (patron.getCheckoutCount() >= patron.getMaxCheckoutLimit()) {
+        return 3.2;
+    }
+    
+    // Step 6: Process checkout
+    // Add book to patron's checked out list
+    LocalDate dueDate = LocalDate.now().plusDays(patron.getLoanPeriodDays());
+    patron.addCheckedOutBook(book.getIsbn(), dueDate);
+    
+    // Decrease book availability
+    book.checkout();
+    
+    // Record transaction 
+    Transaction transaction = new Transaction(patron, book, LocalDate.now(), dueDate);
+    history.add(transaction);
+    
+    // Step 7: Determine success code (check warnings)
+    
+    // Priority 1: Check for overdue warning (1-2 overdue books)
+    if (patron.getOverdueCount() >= 1 && patron.getOverdueCount() <= 2) {
+        return 1.0; // Warning: has overdue books
+    }
+    
+    // Priority 2: Check for limit warning (within 2 of max after this checkout)
+    int maxLimit = patron.getMaxCheckoutLimit();
+    int currentCount = patron.getCheckoutCount(); // Already includes this checkout
+    if (currentCount >= maxLimit - 2) {
+        return 1.1; // Warning: approaching limit
+    }
+    
+    // Normal success
+    return 0.0;
+}
 
 
     /**
