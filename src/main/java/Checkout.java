@@ -14,7 +14,7 @@ public class Checkout {
 
     private Map<String, Book> bookList; // ISBN -> Book
     private Map<String, Patron> patrons; // PatronID -> Patron
-    private List<Transaction> history; //
+    private List<Transaction> history; 
 
     /**
      * Inner class to track checkout transactions.
