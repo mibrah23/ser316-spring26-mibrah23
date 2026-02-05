@@ -27,10 +27,10 @@ Review ALL source files (in main not test) in the project and identify defects u
 | 3 | Patron.java | 118-123 | CS | if-else chain on the same line and no spacing | Medium |
 | 4 | Patron.java | 151-152 | CG | empty else | Low |
 | 5 | Checkout.java | 17 | CS | empty comment | Low |
-| 6 | | | | | |
-| 7 | | | | | |
-| 8 | | | | | |
-| 9 | | | | | |
+| 6 | Patron.java | 192-196 | CG | Complicated | Medium |
+| 7 | Patron.java | 130-132 | CG | The chkSuspended() method is the same as isAccountSuspended() | Medium |
+| 8 | Checkout.java | 15 | CS | Variable named 'bookList' is actually a Map<String, Book> | Medium |
+| 9 | Checkout.java | 246 | FD | == to compare strings instead of .equals() | Critical |
 | 10 | | | | | |
 
 **Severity Levels:**
