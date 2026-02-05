@@ -156,8 +156,7 @@ public class Patron {
     public void addFine(double amount) {
         if (amount > 0) {
             this.fines += amount;
-        } else {
-        }
+        } 
     }
 
     /**
