@@ -9,6 +9,7 @@
 ## Part 1: Control Flow Graph for countBooksByType()
 
 ### Graph Description
+![graph](https://github.com/user-attachments/assets/1a6915a5-5a40-4b1f-a8af-92a30a154df1)
 
 
 
