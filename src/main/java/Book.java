@@ -1,5 +1,3 @@
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Represents a book in the library system.
@@ -103,7 +101,7 @@ public class Book {
      * Increments available copies when book is returned.
      */
     public void returnBook() {
-        if (availableCopies < 100) {
+        if (availableCopies < totalCopies) {
             availableCopies++;
         }
         this.available = (availableCopies > 0);

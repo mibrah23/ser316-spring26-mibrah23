@@ -115,13 +115,21 @@ public class Patron {
      * @return Loan period in days
      */
     public int getLoanPeriodDays() {
-        if(type==PatronType.FACULTY)return 60;
-        else if(type==PatronType.STAFF)return 45;
-        else if(type==PatronType.STUDENT)return 30;
-        else if(type==PatronType.PUBLIC)return 21;
-        else if(type==PatronType.CHILD)return 14;
-        else return 21;
+    switch (type) {
+        case FACULTY:
+            return 60;
+        case STAFF:
+            return 45;
+        case STUDENT:
+            return 30;
+        case PUBLIC:
+            return 21;
+        case CHILD:
+            return 14;
+        default:
+            return 21;
     }
+}
 
     public void resetFines() {
         this.fines = 0.0;
@@ -148,8 +156,7 @@ public class Patron {
     public void addFine(double amount) {
         if (amount > 0) {
             this.fines += amount;
-        } else {
-        }
+        } 
     }
 
     /**
