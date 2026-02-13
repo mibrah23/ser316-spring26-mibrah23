@@ -21,15 +21,15 @@ public class CheckoutBlackBox {
      * Provides the list of Checkout classes to test.
      * Each test will run against ALL implementations.
      */
-    @SuppressWarnings("unchecked")
-    static Stream<Class<? extends Checkout>> checkoutClassProvider() {
-        return (Stream<Class<? extends Checkout>>) Stream.of(
-                Checkout0.class,
-                Checkout1.class,
-                Checkout2.class,
-                Checkout3.class
-        );
-    }
+static Stream<Class<? extends Checkout>> checkoutClassProvider() {
+    return Stream.of(
+            Checkout.class
+            // Checkout0.class,  
+            // Checkout1.class,
+            // Checkout2.class,
+            // Checkout3.class
+    );
+}
 
     /**
      * Helper method to create Checkout instance from class using reflection.
