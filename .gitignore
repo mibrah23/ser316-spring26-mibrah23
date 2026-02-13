@@ -3,15 +3,33 @@
 build/
 gradle-app.setting
 !gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
 
 
 # VSCode
 .vscode/
 *.code-workspace
-
+*.iml
+*.ipr
+*.iws
+.settings/
+.classpath
+.project
+bin/
 
 # OS Files
 .DS_Store
 .DS_Store?
 
+# Temporary files
+*.log
+*.tmp
+*.swp
+*~
+
+# JaCoCo
+*.exec
+
+# Test output
+test-output/
 
