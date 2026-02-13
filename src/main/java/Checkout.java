@@ -15,6 +15,22 @@ public class Checkout {
     private Map<String, Book> bookList; // ISBN -> Book
     private Map<String, Patron> patrons; // PatronID -> Patron
     private List<Transaction> history; //
+   
+    // Patron eligibility error codes
+    private static final double PATRON_NULL_ERROR = 3.1;
+    private static final double SUSPENDED_ERROR = 3.0;
+    private static final double TOO_MANY_OVERDUE_ERROR = 4.0;
+    private static final double HIGH_FINES_ERROR = 4.1;
+    private static final int MAX_OVERDUE_BEFORE_BLOCK = 3;
+    private static final double MAX_FINE_BEFORE_BLOCK = 10.0;
+    private static final double ELIGIBLE = 0.0;
+
+    // Fine calculation rates
+    private static final double FINE_RATE_DAYS_1_7 = 0.25;
+    private static final double FINE_RATE_DAYS_8_14 = 0.50;
+    private static final double FINE_RATE_DAYS_15_PLUS = 1.00;
+    private static final int FINE_TIER_1_DAYS = 7;
+    private static final int FINE_TIER_2_DAYS = 14;
 
     /**
      * Inner class to track checkout transactions.
@@ -35,16 +51,28 @@ public class Checkout {
         }
     }
 
+    /**
+     * Constructs a new Checkout system.
+     * Initializes empty collections for books, patrons, and transaction history.
+     */
     public Checkout() {
         this.bookList = new HashMap<>();
         this.patrons = new HashMap<>();
         this.history = new ArrayList<>();
     }
 
+    /**
+     * Adds a book to the library inventory.
+     * @param book the book to add to the inventory
+     */
     public void addBook(Book book) {
         bookList.put(book.getIsbn(), book);
     }
 
+    /**
+     * Registers a new patron in the library system.
+     * @param patron the patron to register
+     */
     public void registerPatron(Patron patron) {
         patrons.put(patron.getPatronId(), patron);
     }
@@ -65,18 +93,18 @@ public class Checkout {
      */
     public double validatePatronEligibility(Patron patron) {
         if (patron == null) {
-            return 3.1;
+            return PATRON_NULL_ERROR;
         }
         if (patron.isAccountSuspended()) {
-            return 3.0;
+            return SUSPENDED_ERROR;
         }
-        if (patron.getOverdueCount() >= 3) {
-            return 4.0;
+        if (patron.getOverdueCount() >= MAX_OVERDUE_BEFORE_BLOCK) {
+            return TOO_MANY_OVERDUE_ERROR;
         }
-        if (patron.getFineBalance() >= 10.0) {
-            return 4.1;
+        if (patron.getFineBalance() >= MAX_FINE_BEFORE_BLOCK) {
+            return HIGH_FINES_ERROR;
         }
-        return 0.0; // Eligible
+        return ELIGIBLE; // Eligible
     }
 
     /**
@@ -92,10 +120,13 @@ public class Checkout {
      *
      * Return codes:
      *   0.0 - Success, book checked out normally
-     *   0.1 - Success, renewal (patron already had this book, renewal sets the due date to (today + patron.getLoanPeriodDays()).)
+     *   0.1 - Success, renewal (patron already had this book, 
+     *   renewal sets the due date to (today + patron.getLoanPeriodDays()).)
      *   1.0 - Success with warning (patron has 1-2 overdue books)
-     *   1.1 - Success with warning (patron within 2 of max checkout limit after this checkout)
-     *        Max limits: FACULTY=20 (e.g. warning at 18, 19, 20 including current checkout), STAFF=15, STUDENT=10, PUBLIC=5, CHILD=3
+     *   1.1 - Success with warning 
+     *   (patron within 2 of max checkout limit after this checkout)
+     *        Max limits: FACULTY=20 (e.g. warning at 18, 19, 20 including current checkout), 
+     *        STAFF=15, STUDENT=10, PUBLIC=5, CHILD=3
      *   2.0 - Book unavailable (all copies checked out)
      *   2.1 - Book is null
      *   3.0 - Patron account is suspended
@@ -118,7 +149,8 @@ public class Checkout {
      *   5. If not-renewal
      *      5.1. Check if book is available (2.0)
      *      5.2. Check if patron is at max checkout limit (3.2)
-     *      5.3. Process checkout (update patron checkedOutBooks, call book.checkout()), then determine success code (priority 1.0, then 1.1, else 0.0)
+     *      5.3. Process checkout (update patron checkedOutBooks, call book.checkout()), 
+     *      then determine success code (priority 1.0, then 1.1, else 0.0)
      *
      *
      * Success non-renewal:
@@ -126,12 +158,17 @@ public class Checkout {
      *   - book.checkout() will be called reducing the availability by 1
      *
      * Success renewal:
-     *  - patron.getCheckedOutBooks() is updated to today + loanPeriodDays; book.checkout() is not called; available copies do not change.
+     *  - patron.getCheckedOutBooks() is updated to today + loanPeriodDays;
+     *    book.checkout() is not called; available copies do not change.
      *
      * Additional notes:
-     *  - getCheckoutCount() refers to the number of books currently checked out (size of the patron's checked-out collection), not lifetime transactions; renewals do not increase this count.
-     *  - For any non-success return code (2.x–5.x), neither the patron's checked-out books nor the book's available copies should change.
-     *  - Tests may assume due dates equal LocalDate.now().plusDays(patron.getLoanPeriodDays()) on the day the test runs.
+     *  - getCheckoutCount() refers to the number of books currently checked out 
+     *    (size of the patron's checked-out collection),
+     *    not lifetime transactions; renewals do not increase this count.
+     *  - For any non-success return code (2.x–5.x), 
+     *    neither the patron's checked-out books nor the book's available copies should change.
+     *  - Tests may assume due dates equal LocalDate.now().plusDays(patron.getLoanPeriodDays()) 
+     *    on the day the test runs.
      *  - A book is unavailable if and only if book.getAvailableCopies() <= 0 (i.e., book.isAvailable() is false).
      *  - Console output (including Easter eggs) is non-functional and should not be asserted in tests.
      *
@@ -236,19 +273,19 @@ public class Checkout {
         double fine = 0.0;
 
         // First 7 days: $0.25/day
-        int days1 = Math.min(numOfDays, 7);
-        fine += days1 * 0.25;
+        int days1 = Math.min(numOfDays, FINE_TIER_1_DAYS);
+        fine += days1 * FINE_RATE_DAYS_1_7;
 
         // Days 8-14: $0.50/day
-        if (numOfDays > 7) {
-            int days2 = Math.min(numOfDays - 7, 7);
-            fine += days2 * 0.50;
+        if (numOfDays > FINE_TIER_1_DAYS) {
+            int days2 = Math.min(numOfDays - FINE_TIER_1_DAYS, FINE_TIER_1_DAYS);
+            fine += days2 * FINE_RATE_DAYS_8_14;
         }
 
         // Days 15+: $1.00/day
-        if (numOfDays > 14) {
-            int days3 = numOfDays - 14;
-            fine += days3 * 1.00;
+        if (numOfDays > FINE_TIER_2_DAYS) {
+            int days3 = numOfDays - FINE_TIER_2_DAYS;
+            fine += days3 * FINE_RATE_DAYS_15_PLUS;
         }
 
         // Double rate for REFERENCE and TEXTBOOK
