@@ -1,6 +1,7 @@
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,7 +11,7 @@ import java.util.Map;
  * Handles book checkouts, returns, renewals, and fine calculations.
  */
 public class Checkout {
-    public static double MAX_FINE_AMOUNT = 25.0;
+    public static final double MAX_FINE_AMOUNT = 25.0; // SER316 TASK 2 SPOTBUGS FIX
 
     private Map<String, Book> bookList; // ISBN -> Book
     private Map<String, Patron> patrons; // PatronID -> Patron
@@ -342,7 +343,7 @@ public class Checkout {
             return false;
         }
 
-        return typeString == expectedType.toString();
+        return typeString.equals(expectedType.toString()); // SER316 TASK 2 SPOTBUGS FIX
     }
 
     /**
@@ -436,10 +437,10 @@ public class Checkout {
     }
 
     public Map<String, Book> getInventory() {
-        return bookList;
-    }
+    return Collections.unmodifiableMap(bookList);
+} // SER316 TASK 2 SPOTBUGS FIX
 
     public Map<String, Patron> getPatrons() {
-        return patrons;
-    }
+    return Collections.unmodifiableMap(patrons);
+} // SER316 TASK 2 SPOTBUGS FIX
 }
