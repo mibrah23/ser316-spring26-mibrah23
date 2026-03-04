@@ -8,7 +8,6 @@ public class Book {
     private String title;
     private String author;
     private BookType type;
-    private boolean available;
     private boolean referenceOnly;
     private int totalCopies;
     private int availableCopies;
@@ -41,10 +40,8 @@ public class Book {
         // Reference books never circulate - always unavailable for checkout
         if (this.referenceOnly) {
             this.availableCopies = 0;
-            this.available = false;
         } else {
             this.availableCopies = totalCopies;
-            this.available = true;
         }
     }
 
@@ -84,7 +81,6 @@ public class Book {
     // Setters
     public void setAvailableCopies(int copies) {
         this.availableCopies = copies;
-        this.available = (copies > 0);
     }
 
     /**
@@ -94,7 +90,6 @@ public class Book {
         if (availableCopies > 0) {
             availableCopies--;
         }
-        this.available = (availableCopies > 0);
     }
 
     /**
@@ -104,16 +99,14 @@ public class Book {
         if (availableCopies < totalCopies) {
             availableCopies++;
         }
-        this.available = (availableCopies > 0);
     }
 
     public void resetAvailability() {
         this.availableCopies = this.totalCopies;
-        this.available = true;
     }
 
     public boolean checkAvailability() {
-        return this.available;
+        return availableCopies > 0;
     }
 
     @Override
