@@ -24,6 +24,7 @@ The method body now reads as self-documenting code. I also unified the existing 
 
 All 25 tests pass after both changes.
 
+<img width="2742" height="1104" alt="Screenshot 2026-03-04 232649" src="https://github.com/user-attachments/assets/ded346b7-c193-4134-a0f1-6d9b36e87335" />
 
 
 ---
