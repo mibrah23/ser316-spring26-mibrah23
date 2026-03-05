@@ -17,14 +17,28 @@ public class Checkout {
     private Map<String, Patron> patrons; // PatronID -> Patron
     private List<Transaction> history; //
    
+    // Checkout status codes
+    private static final double STATUS_SUCCESS = 0.0;
+    private static final double STATUS_RENEWAL = 0.1;
+    private static final double STATUS_OVERDUE_WARNING = 1.0;
+    private static final double STATUS_LIMIT_WARNING = 1.1;
+    private static final double STATUS_BOOK_UNAVAILABLE = 2.0;
+    private static final double STATUS_BOOK_NULL = 2.1;
+    private static final double STATUS_ACCOUNT_SUSPENDED = 3.0;
+    private static final double STATUS_PATRON_NULL = 3.1;
+    private static final double STATUS_AT_MAX_LIMIT = 3.2;
+    private static final double STATUS_TOO_MANY_OVERDUE = 4.0;
+    private static final double STATUS_HIGH_FINES = 4.1;
+    private static final double STATUS_REFERENCE_ONLY = 5.0;
+
     // Patron eligibility error codes
-    private static final double PATRON_NULL_ERROR = 3.1;
-    private static final double SUSPENDED_ERROR = 3.0;
-    private static final double TOO_MANY_OVERDUE_ERROR = 4.0;
-    private static final double HIGH_FINES_ERROR = 4.1;
+    private static final double PATRON_NULL_ERROR = STATUS_PATRON_NULL;
+    private static final double SUSPENDED_ERROR = STATUS_ACCOUNT_SUSPENDED;
+    private static final double TOO_MANY_OVERDUE_ERROR = STATUS_TOO_MANY_OVERDUE;
+    private static final double HIGH_FINES_ERROR = STATUS_HIGH_FINES;
     private static final int MAX_OVERDUE_BEFORE_BLOCK = 3;
     private static final double MAX_FINE_BEFORE_BLOCK = 10.0;
-    private static final double ELIGIBLE = 0.0;
+    private static final double ELIGIBLE = STATUS_SUCCESS;
 
     // Fine calculation rates
     private static final double FINE_RATE_DAYS_1_7 = 0.25;
@@ -186,63 +200,63 @@ public class Checkout {
     
     // Step 2: Check if book is null
     if (book == null) {
-        return 2.1;
+        return STATUS_BOOK_NULL;
     }
-    
+
     // Step 3: Check if book is reference-only
     if (book.isReferenceOnly()) {
-        return 5.0;
+        return STATUS_REFERENCE_ONLY;
     }
-    
-    // Step 4: Check if this is a renewal 
+
+    // Step 4: Check if this is a renewal
     boolean isRenewal = patron.hasBookCheckedOut(book.getIsbn());
     if (isRenewal) {
         // Renewal: update due date, don't change availability
         LocalDate newDueDate = LocalDate.now().plusDays(patron.getLoanPeriodDays());
         patron.getCheckedOutBooks().put(book.getIsbn(), newDueDate);
-        return 0.1; // Renewal success code
+        return STATUS_RENEWAL;
     }
-    
+
     // Step 5: Not a renewal - check availability and limits
-    
+
     // 5.1: Check if book is available
     if (!book.isAvailable()) {
-        return 2.0;
+        return STATUS_BOOK_UNAVAILABLE;
     }
-    
+
     // 5.2: Check if patron is at max checkout limit
     if (patron.getCheckoutCount() >= patron.getMaxCheckoutLimit()) {
-        return 3.2;
+        return STATUS_AT_MAX_LIMIT;
     }
-    
+
     // Step 6: Process checkout
     // Add book to patron's checked out list
     LocalDate dueDate = LocalDate.now().plusDays(patron.getLoanPeriodDays());
     patron.addCheckedOutBook(book.getIsbn(), dueDate);
-    
+
     // Decrease book availability
     book.checkout();
-    
-    // Record transaction 
+
+    // Record transaction
     Transaction transaction = new Transaction(patron, book, LocalDate.now(), dueDate);
     history.add(transaction);
-    
+
     // Step 7: Determine success code (check warnings)
-    
+
     // Priority 1: Check for overdue warning (1-2 overdue books)
     if (patron.getOverdueCount() >= 1 && patron.getOverdueCount() <= 2) {
-        return 1.0; // Warning: has overdue books
+        return STATUS_OVERDUE_WARNING;
     }
-    
+
     // Priority 2: Check for limit warning (within 2 of max after this checkout)
     int maxLimit = patron.getMaxCheckoutLimit();
     int currentCount = patron.getCheckoutCount(); // Already includes this checkout
     if (currentCount >= maxLimit - 2) {
-        return 1.1; // Warning: approaching limit
+        return STATUS_LIMIT_WARNING;
     }
-    
+
     // Normal success
-    return 0.0;
+    return STATUS_SUCCESS;
 }
 
 
