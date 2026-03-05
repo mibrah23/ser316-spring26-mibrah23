@@ -135,10 +135,6 @@ public class Patron {
         this.fines = 0.0;
     }
 
-    public boolean chkSuspended() {
-        return this.suspended;
-    }
-
     // Setters
     public void setAccountSuspended(boolean suspended) {
         this.suspended = suspended;
@@ -196,11 +192,7 @@ public class Patron {
      * @return true if book is checked out by this patron
      */
     public boolean hasBookCheckedOut(String isbn) {
-        if (bookMap.containsKey(isbn) == true) {
-            return true;
-        } else {
-            return false;
-        }
+        return bookMap.containsKey(isbn);
     }
 
     /**
